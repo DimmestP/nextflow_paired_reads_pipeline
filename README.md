@@ -7,7 +7,23 @@ We conducted two RNA-Seq assays to investigate alternative polyA site usage in t
 
 [5PSeq](https://www.nature.com/articles/nprot.2016.026) is an RNA-Seq assay that captures 5'phosphorylated mRNA transcript, enabling us to see the PolyA site usage of mRNA's flagged for decay. 
 
-Each analysis has its own GitHub repo holding the specific data required for that assay but both a clones of this template repo to enable synchronisation of changes to core code.
+Each analysis has its own branch in this repo holding the specific data required for that assay with the main branch enabling synchronised changes to core code.
+
+# Installation
+First, follow the installation steps on the [NextFlow](https://www.nextflow.io/).
+
+To run this pipeline you will also need to have [conda](https://www.nextflow.io/docs/latest/index.html) installed as each process runs in a conda environment.
+
+Then, clone this repo to your local computer/cluster. 
+
+# Usage
+To run this pipeline move to the code folder, change to the appropriate branch and pass the paired_reads_pipeline.nf file to nextflow.
+
+```
+cd code
+git checkout QuantSeq_nextflow_pipeline
+nextflow run paired_reads_pipeline.nf
+```
 
 # Status
 The pipeline has the following functionality (Any unticked funtionality is currently being developed)
