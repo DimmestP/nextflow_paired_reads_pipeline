@@ -9,6 +9,21 @@ We conducted two RNA-Seq assays to investigate alternative polyA site usage in t
 
 Each analysis has its own GitHub repo holding the specific data required for that assay but both a clones of this template repo to enable synchronisation of changes to core code.
 
+# Installation
+First, follow the installation steps on the [NextFlow](https://www.nextflow.io/).
+
+To run this pipeline you will also need to have [conda](https://www.nextflow.io/docs/latest/index.html) installed as each process runs in a conda environment.
+
+Then, clone this repo to your local computer/cluster. 
+
+# Usage
+To run this pipeline move to the code folder and pass the paired_reads_pipeline.nf file to nextflow.
+
+```
+cd code
+nextflow run paired_reads_pipeline.nf
+```
+
 # Status
 The pipeline has the following functionality (Any unticked funtionality is currently being developed)
 
