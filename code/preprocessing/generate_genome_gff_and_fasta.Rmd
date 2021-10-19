@@ -1,5 +1,5 @@
 ---
-title: "Generate gff and fasta files combining the reference BY4741 genome with plasmid construct sequences"
+title: "Generate gff and fasta files combining the reference S288C genome with plasmid construct sequences"
 author: "Sam Haynes"
 date: "02/07/2021"
 output: html_document
@@ -111,7 +111,7 @@ plasmid_features_all_two_reps <- plasmid_features_all %>%
               mutate(rep = paste0(seqname, "_b2"))) %>%
   inner_join(RNA_seq_sample_names, by = c("rep" = "construct_name"))
 
-genome_features <- read_tsv(here("data/input/genome_annotations/raw_annotation/longest_full-ORF_ypd_plus_other_fixed_UTR_length_transcripts.gff"), comment="#", col_names = GTF_COLNAMES) %>%
+genome_features <- read_tsv(here("data/input/genome_annotations/raw_annotation/reference_genome_annotation/longest_full-ORF_ypd_plus_other_fixed_UTR_length_transcripts.gff"), comment="#", col_names = GTF_COLNAMES) %>%
   mutate(attribute = paste0(attribute, ";Name=", str_extract(attribute, "(?<=ID\\=)\\w+")))
 
 # Write separate gff files for each sample
