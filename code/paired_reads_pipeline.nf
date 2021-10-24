@@ -1,48 +1,28 @@
 /*
-Template paired read analysis pipeline for the Chimera Project S.cer motif insertion experiment.
+QuantSeq paired read analysis pipeline for the Chimera Project S.cer motif insertion experiment.
 */
 
 /*
 Define dataset-specific input parameters.
+These still need documentation and flexibility.
 To find where they are used, search the document for the name, 
 e.g. "params.featurename" is used in the featureCounts call.
 */
-
-/*
-Adapter sequences to remove from reads
-Some are shared between the paired reads and others are specific
-*/
-params.read_1_adapter = < String holding adapter sequence specific to read 1 >
-params.read_adapters = < String holding adapter sequence shared between to read 1 >
-params.read_2_adapter = < String holding adapter sequence specific to read 2 >
-
-/*
-directories holding key inputs:
-params.index_dir : Path to directory holding indexed reference genomes to map to
-mRNAgff_dir : Path to directory holding gffs with genome annotations
-input_fq_dir : Path to directory holding raw fastq files from RNA-seq
-output_dir : Path to directory holding all output files from the pipeline
-
-*/
-params.input_fq_dir = < Path to directory >
-params.index_dir = '../data/input/indexed_genome'
-params.mRNAgff_dir = '../data/input/genome_annotations/pipeline_annotation' 
-params.output_dir = '../data/output'
-
-/*
-Miscellaneous variables to define pipeline behaviour:
-featuretype : String passed to featureCounts to select a specific type of feature to count reads
-featurename : String passed to featureCounts to select the name of each feature of a given type
-num_processes: Number passed to to specify the number of threads that can be ran simultaneously 
-index_prefix : String highlighting suffix add to each indexed genome files
-*/
-
+params.read_1_adapter = 'TTTTTTTTTTTTTTTTTT'
+params.read_adapters_1 = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
+params.read_adapters_2 = 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
+params.read_adapters_3 = 'AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT'
+params.read_2_adapter = 'AAAAAAAAAAAAAAAAAA'
+params.index_dir = '../data/input/Scer_ref_genome/construct_integrated_genome/construct_genome_fastas/indexed_genome/'
+params.index_prefix = '_sample_with_saccharomyces_cerevisiae_R64'
+params.mRNAgff_dir = '../data/input/Scer_ref_genome/construct_integrated_genome/construct_genome_gffs/'
+params.input_fq_dir = '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/EdWallace-030521-data/' 
+params.output_dir = '/homes/wallacelab/datastore/wallace_rna/data/2021/07-July/Sam/chimera_quantseq_pipeline_output/'
 params.featuretype = 'primary_transcript'
 params.featurename = 'ID'
 params.num_processes = 4
-params.index_prefix = '_sample_with_saccharomyces_cerevisiae_R64'
 
-/* Flatten nested list of file names into one string (used after grouping by sample) */
+/* Flatten nested list of file names (used after grouping by sample) */
 
 flattenFileList = {
     list_of_paired_files = it[1]
@@ -60,7 +40,7 @@ extractSampleCode = {
 }
 
 /*
-Define the input fastq.gz files using sample name to pair forward and reverse reads, and group across lanes 
+Define the input fastq.gz files, pairing forward and reverse reads and grouping across lanes by sample anme
 */
 
 multi_lane_input_fq = Channel
@@ -132,7 +112,8 @@ process cutAdapters {
     shell:
         """
         cutadapt --trim-n -O 1 -m 20 -a ${params.read_1_adapter} -A ${params.read_2_adapter}\
-            -A ${params.read_adapters} -a ${params.read_adapters}\
+            -A ${params.read_adapters_1} -A ${params.read_adapters_2} -A ${params.read_adapters_3}\
+            -a ${params.read_adapters_1} -a ${params.read_adapters_2} -a ${params.read_adapters_3}\
             -o trim_1.fq -p trim_2.fq -j ${params.num_processes} ${sample_fq[0]} ${sample_fq[1]}
         """
 }
