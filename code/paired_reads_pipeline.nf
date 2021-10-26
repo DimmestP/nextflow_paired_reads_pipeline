@@ -1,28 +1,52 @@
 /*
-QuantSeq paired read analysis pipeline for the Chimera Project S.cer motif insertion experiment.
+Nextflow paired read analysis pipeline for the Chimera Project S.cer motif insertion experiment. 
+This contains the logic to analysis QuantSeq and 5PSeq data depending on input variables. 
 */
 
 /*
-Define dataset-specific input parameters.
-These still need documentation and flexibility.
+Define input parameters.
 To find where they are used, search the document for the name, 
 e.g. "params.featurename" is used in the featureCounts call.
 */
-params.read_1_adapter = 'TTTTTTTTTTTTTTTTTT'
+
+/*
+Experiment specific parameters such are where the raw fastq files are
+and where the pipeline outputs should be saved. The values can be changed here
+or by passing a new value to the variable when calling the Nextflow CLI,
+e.g. nextflow run paired_reads_pipeline --experiment_name = '5PSeq'
+*/
+params.experiment_name = 'QuantSeq'
+params.combine_reads_over_lanes = true
+params.fastq_file_regex = '*_R{1,2}_001.fastq.gz'
+params.sample_name_regex = '[a-z]+\d+'
+params.input_fq_dir = '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/EdWallace-030521-data/' 
+params.output_dir = '/homes/wallacelab/datastore/wallace_rna/data/2021/10-Oct/Sam/chimera_quantseq_pipeline_output/'
+params.read_1_forward = false
+
+/*
+String of nucleotides representing sequence adapters that should 
+be trimmed from reads with cutadapts
+*/
+params.read_reverse_adapter = 'TTTTTTTTTTTTTTTTTT'
 params.read_adapters_1 = 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
 params.read_adapters_2 = 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
 params.read_adapters_3 = 'AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT'
-params.read_2_adapter = 'AAAAAAAAAAAAAAAAAA'
-params.index_dir = '../data/QuantSeq/input/indexed_genome/'
+params.read_forward_adapter = 'AAAAAAAAAAAAAAAAAA'
+
+/*
+Miscellaneous variables
+*/
 params.index_prefix = '_sample_with_saccharomyces_cerevisiae_R64'
-params.mRNAgff_dir = '../data/QuantSeq/input/genome_annotations/'
-params.input_fq_dir = '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/EdWallace-030521-data/' 
-params.output_dir = '/homes/wallacelab/datastore/wallace_rna/data/2021/10-Oct/Sam/chimera_quantseq_pipeline_output/'
 params.featuretype = 'primary_transcript'
 params.featurename = 'ID'
 params.num_processes = 4
+params.index_dir = '../data/' + params.experiment_name + '/input/indexed_genome/'
+params.mRNAgff_dir = '../data/'+ params.experiment_name + '/input/genome_annotations/'
 
-/* Flatten nested list of file names (used after grouping by sample) */
+/* 
+Flatten nested list of file names (used after grouping by sample),
+i.e. convert list of list of strings to list of strings.
+ */
 
 flattenFileList = {
     list_of_paired_files = it[1]
@@ -31,38 +55,67 @@ flattenFileList = {
     it
 }
 
-/* Extract sample code from file name */
-extractSampleCode = {
+/* Extract sample code from file name, multi-lane version */
+extract_sample_code_multi_lane = {
     filename = it[0]
-    sample_name = (filename =~ /\w\d*(?=_\w\d+_L)/)[0]
+    sample_name = (filename =~ ${'/^' + $params.sample_name_regex + '/'})[0]
     it[0] = sample_name
     it
 }
 
+/* Extract sample code from file name single-lane version */
+extract_sample_code_single_lane = {
+    sample_name = (it =~ ${'/^' + $params.sample_name_regex + '/'})[0]
+    tuple sample_name, it
+}
+
 /*
-Define the input fastq.gz files, pairing forward and reverse reads and grouping across lanes by sample anme
+Run if the reads from the same sample are spread over multiple flow lanes and
+need to be combined, i.e. if you are running the Chimera project QuantSeq analysis.
 */
 
-multi_lane_input_fq = Channel
-    .fromFilePairs("${params.input_fq_dir}/*_R{1,2}_001.fastq.gz", size: 2)
-    .map(extractSampleCode)
-    .groupTuple(size: 4)
-    .map(flattenFileList)
+if(params.combine_reads_over_lanes){
 
-process combineLanesAcrossSamples {
-    errorStrategy 'retry'
-    maxRetries 3
-    tag "${sample_id}"
-    input:
-    set sample_id, file(seq) from multi_lane_input_fq
+	/*
+	Define the input fastq.gz files, pairing forward and reverse reads and grouping across lanes by sample anme
+	*/
 
-    output:
-    tuple val(sample_id), file("${sample_id}_R*.fastq.gz") into input_fq
+	multi_lane_input_fq = Channel
+    		.fromFilePairs($params.input_fq_dir + $params.fastq_file_regex, size: 2)
+    		.map(extract_sample_code_multi_lane)
+    		.groupTuple(size: 4)
+    		.map(flattenFileList)
 
-    """
-    cat ${seq.findAll{it =~/_R1_/}.asType(nextflow.util.BlankSeparatedList)} > ${sample_id + '_R1.fastq.gz'}
-    cat ${seq.findAll{it =~/_R2_/}.asType(nextflow.util.BlankSeparatedList)} > ${sample_id + '_R2.fastq.gz'}
-   """
+	process combineLanesAcrossSamples {
+    		errorStrategy 'retry'
+    		maxRetries 3
+    		tag "${sample_id}"
+    		input:
+    		set sample_id, file(seq) from multi_lane_input_fq
+
+    		output:
+    		tuple val(sample_id), file("${sample_id}_R*.fastq.gz") into input_fq
+
+    		"""
+    		cat ${seq.findAll{it =~/_R1_/}.asType(nextflow.util.BlankSeparatedList)} > ${sample_id + '_R1.fastq.gz'}
+    		cat ${seq.findAll{it =~/_R2_/}.asType(nextflow.util.BlankSeparatedList)} > ${sample_id + '_R2.fastq.gz'}
+   		"""
+		}
+}
+/*
+Run if the reads from the same sample are in one file, 
+i.e. if you are running the Chimera project 5PSeq analysis.
+*/
+else{
+	/*
+	Define the input fastq.gz files, filtering only relevent files,
+	pairing forward and reverse reads.
+	*/
+
+	input_fq = Channel
+    		.fromPath($params.input_fq_dir + $params.fastq_file_regex)
+    		.map(extract_sample_code_single_lane)
+    		.groupTuple(size:2, sort:"true")
 }
 
 /* split input_fq into two separate channels */
@@ -110,12 +163,22 @@ process cutAdapters {
     output:
         tuple val(sample_id), file("trim_*.fq") into cut_fq
     shell:
-        """
-        cutadapt --trim-n -O 1 -m 20 -a ${params.read_1_adapter} -A ${params.read_2_adapter}\
+    if(params.read_1_forward){
+    	"""
+        cutadapt --trim-n -O 1 -m 20 -A ${params.read_reverse_adapter} -a ${params.read_forward_adapter}\
             -A ${params.read_adapters_1} -A ${params.read_adapters_2} -A ${params.read_adapters_3}\
             -a ${params.read_adapters_1} -a ${params.read_adapters_2} -a ${params.read_adapters_3}\
             -o trim_1.fq -p trim_2.fq -j ${params.num_processes} ${sample_fq[0]} ${sample_fq[1]}
         """
+    }
+    else{
+        """
+        cutadapt --trim-n -O 1 -m 20 -a ${params.read_reverse_adapter} -A ${params.read_forward_adapter}\
+            -A ${params.read_adapters_1} -A ${params.read_adapters_2} -A ${params.read_adapters_3}\
+            -a ${params.read_adapters_1} -a ${params.read_adapters_2} -a ${params.read_adapters_3}\
+            -o trim_1.fq -p trim_2.fq -j ${params.num_processes} ${sample_fq[0]} ${sample_fq[1]}
+        """
+    }
 }
 
 /*
@@ -123,7 +186,7 @@ Define the aligner indexes for each construct
 */
 
 extract_sample_name = {
-    sample_name = it =~ /(?<=\/)\w\d*(?=_)/
+    sample_name = it =~ ${'/(?<=\/)' + $params.sample_name_regex + '(?=_)/'}
     sample_file_tuple = [sample_name[0],it]
     sample_file_tuple
 }
