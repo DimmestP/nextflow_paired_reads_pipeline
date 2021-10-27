@@ -1,4 +1,4 @@
-# Template Nextflow Analysis Pipeline for the Analysis of Paired End Datasets
+# Template Nextflow Pipeline for the Analysis of Paired End Datasets
 This GitHub repo holds the [NextFlow](https://www.nextflow.io/) workflow for reproducible analysis of the RNA-seq datasets created in the [Chimera project](https://github.com/DimmestP/chimera_project_manuscript).
 
 We conducted two RNA-Seq assays to investigate alternative polyA site usage in the constructs created for the project:  
