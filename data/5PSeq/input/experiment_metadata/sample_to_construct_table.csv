@@ -1,0 +1,17 @@
+sample_name,construct_name
+1dt,POT1-ccdB_b1
+3dt,pRPS3-mCherry-tRPS3_WT_b1
+5dt,pRPS3-mCherry-tRPS3_mod0_b1
+7dt,pRPS3-mCherry-tRPS3_modA_b1
+9dt,pRPS3-mCherry-tRPS3_modB_b1
+11dt,pRPS3-mCherry-tRPS3_modC_b1
+13dt,pRPS3-mCherry-tRPS3_modD_b1
+15dt,pRPS3-mCherry-tRPS3_modE_b1
+2dt,POT1-ccdB_b2
+4dt,pRPS3-mCherry-tRPS3_WT_b2
+6dt,pRPS3-mCherry-tRPS3_mod0_b2
+8dt,pRPS3-mCherry-tRPS3_modA_b2
+10dt,pRPS3-mCherry-tRPS3_modB_b1
+12dt,pRPS3-mCherry-tRPS3_modC_b1
+14dt,pRPS3-mCherry-tRPS3_modD_b1
+16dt,pRPS3-mCherry-tRPS3_modE_b1
