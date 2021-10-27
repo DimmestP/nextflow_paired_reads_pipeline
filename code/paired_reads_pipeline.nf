@@ -65,7 +65,7 @@ extract_sample_code_multi_lane = {
 
 /* Extract sample code from file name single-lane version */
 extract_sample_code_single_lane = {
-    sample_name = (it =~ "^$params.sample_name_regex")[0]
+    sample_name = (it =~ "(?<=$params.input_fq_dir)$params.sample_name_regex")[0]
     tuple sample_name, it
 }
 
