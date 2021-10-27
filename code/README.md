@@ -4,6 +4,22 @@
 
 Nextflow script to filter, align and count RNA-seq reads. It is a template used in other analyses and requires several file name/location variables to be filled to run. 
 
-### preprocessing/
+```
+# how to run code (for QuantSeq)
+nextflow run paired_reads_pipeline.nf
 
-Contains bash and R scripts used to format the input fasta and gff files.
+# how to run code (for 5PSeq)
+nextflow run paired_reads_pipeline.nf --experiment_name '5PSeq' --combine_reads_over_lanes false\
+--input_fq_dir '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/5PSeq_data/'\
+--output_dir '/homes/wallacelab/datastore/wallace_rna/data/2021/10-Oct/Sam/5PSeq_pipeline_output/'\
+--fastq_file_regex '*dt_*.gz' --sample_name_regex '\d+[a-z]+' --read_1_forward true
+
+```
+
+### pre-processing/
+
+Contains bash and R scripts used to format the input fasta, gff files, and index fasta files.
+
+### post-processing/
+
+Contains a bash script to extract a subset of reads mapped to genes of interest for further downstream analysis.
