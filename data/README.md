@@ -1,9 +1,12 @@
 # data
-The file structure of this repo is based on the inputs and outputs of the paired_reads_pipeline.nf
 
-### input
-Contains the processed and raw data required to run the pipeline, e.g. fasta and gff files.
+### 5PSeq
 
-### output
+Contains an input folder with the fasta files, gff files and meta data files required to run the paired_reads_pipeline.nf on the 5PSeq data set. Also, contains an placeholder output file to hold the ouputs of the pipeline.
 
-Contains the outpus of various stages of the Nextflow pipeline script. Although, the largest outputs (such as BAM or BED files) are typically sent straight to the lab datastore.  
+### QuantSeq
+
+Contains an input folder with the fasta files, gff files and meta data files required to run the paired_reads_pipeline.nf on the QuantSeq data set. Also, contains an placeholder output file to hold the ouputs of the pipeline.
+
+### shared_data
+Contains the fasta files and gff files for the raw plasmids and genome usead to create the reference files for each sample in both the 5PSeq and QuantSeq input folders. (Required to run code/pre_processing/generate_genome_gff_and_fasta.Rmd)
