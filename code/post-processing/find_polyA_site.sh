@@ -16,7 +16,7 @@ do
 	grep $regex ../../data/${2}/input/genome_annotations/${sample_name}_sample_longest_full_ORF_with_constructs.gff > $TMPFILE
 
         mkdir ${1}/construct_polyA_bam/${sample_name}/
-        bedtools bamtobed -i $f |\
-	bedtools intersect -u -a stdin -b $TMPFILE | \
-        grep -w - > ${1}/construct_polyA_bam/${sample_name}/${sample_name}_polyA_reads.bed
+        samtools view -b -F 256 -F 4 $f |\
+	bedtools intersect -u -S -bed -abam stdin -b $TMPFILE \
+        > ${1}/construct_polyA_bam/${sample_name}/${sample_name}_polyA_reads.bed
 done;
