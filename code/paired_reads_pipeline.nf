@@ -22,6 +22,7 @@ params.sample_name_regex = "[A-Z]\\d+"
 params.input_fq_dir = '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/EdWallace-030521-data/' 
 params.output_dir = '/homes/wallacelab/datastore/wallace_rna/data/2021/10-Oct/Sam/chimera_quantseq_pipeline_output/'
 params.read_1_forward = false
+params.remove_UMI = false
 
 /*
 String of nucleotides representing sequence adapters that should 
@@ -121,7 +122,7 @@ else{
 /* split input_fq into two separate channels */
 input_fq
     .tap{input_fq_qc}
-    .tap{input_fq_cut}
+    .tap{input_fq_umi}
 
 /*
 Run FastQC to produce a quality control report for the input data for every sample
@@ -147,6 +148,34 @@ process runFastQC{
     ${paired_sample_fq}
     """
 }
+
+/*
+Remove UMIs if present
+*/
+
+if(params.remove_UMI){
+    process removeUMIs{
+        errorStrategy 'retry'
+        maxRetries 3
+        tag "${sample_id}"
+        input:
+            set sample_id, file(sample_fq) from input_fq_umi
+        output:
+            tuple val(sample_id), file("UMI_processed.*.gz") into input_fq_cut
+        shell:
+            """
+            umi_tools extract -I ${sample_fq[0]} --bc-pattern=NNNNNNNN \
+                --read2-in=${sample_fq[1]} --stdout=UMI_processed.1.fastq.gz \
+                --read2-out=UMI_processed.2.fastq.gz --log=UMI_processed.log
+            """
+    }
+}
+else{
+    input_fq_umi
+        .tap{input_fq_cut}
+}
+
+
 
 /*
 Cut sequencing adapters from 3' end of gene
@@ -233,7 +262,6 @@ Turn unsorted aligned samfiles into sorted indexed compressed bamfiles
 */
 
 process samViewSort {
-    conda 'bioconda::samtools=1.11'
     errorStrategy 'retry'
     maxRetries 3
     tag "${sample_id}"
@@ -251,8 +279,31 @@ process samViewSort {
         """
 }
 
-// Split channel for use in multiple downstream processes.
-aligned_sorted_bam.into { bedgraph_bam; htscount_bam }
+/*
+Deduplicate UMIs if present
+*/
+
+if(params.remove_UMI){
+    process deduplicateUMI {   
+        errorStrategy 'retry'
+        maxRetries 3
+        tag "${sample_id}"
+        input:
+             set val(sample_id), file(sample_bam), file(sample_bam_bai) from aligned_sorted_bam
+        output:
+            tuple val(sample_id), file("${sample_id}.deduplicated.bam"), file(sample_bam_bai) into deduplicated_bam
+        shell:
+            """
+            umi_tools dedup -I ${sample_bam} --paired -S ${sample_id}.deduplicated.bam --output-stats=deduplicated
+            """
+    }
+    // Split channel for use in multiple downstream processes.
+    deduplicated_bam.into { bedgraph_bam; htscount_bam }
+}
+else{
+    // Split channel for use in multiple downstream processes.
+    aligned_sorted_bam.into { bedgraph_bam; htscount_bam }
+}
 
 /*
 Make bedgraphs showing coverage of aligned reads

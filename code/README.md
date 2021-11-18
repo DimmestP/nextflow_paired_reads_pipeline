@@ -12,7 +12,7 @@ nextflow run paired_reads_pipeline.nf
 nextflow run paired_reads_pipeline.nf --experiment_name '5PSeq' --combine_reads_over_lanes false\
 --input_fq_dir '/homes/wallacelab/datastore/wallace_rna/bigdata/fastq/5PSeq_data/'\
 --output_dir '/homes/wallacelab/datastore/wallace_rna/data/2021/10-Oct/Sam/5PSeq_pipeline_output/'\
---fastq_file_regex '*dt_*.gz' --sample_name_regex '\d+[a-z]+' --read_1_forward true
+--fastq_file_regex '*dt_*.gz' --sample_name_regex '\d+[a-z]+' --read_1_forward true --remove_UMI true
 
 ```
 

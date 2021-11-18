@@ -10,7 +10,7 @@ regex="mCherry\|YNL178W\|YML028W\|YCR012W"
 for f in ${1}/sorted_bam/*/*.bam;
 do
 	echo $f;
-	sample_name=$(expr match $f '.*\([ABE][0-9]\+\)_')
+	sample_name=$(expr match $f '.*/\([ABEdt0-9]\+\)_')
 
 	# create temp gff file to filter gff files for only entries relating to genes of interest
 	grep $regex ../../data/${2}/input/genome_annotations/${sample_name}_sample_longest_full_ORF_with_constructs.gff > $TMPFILE
