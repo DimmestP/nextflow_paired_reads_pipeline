@@ -8,8 +8,8 @@ Nextflow script to filter, align and count RNA-seq reads. It is a template used 
 # how to run code (for QuantSeq)
 nextflow run paired_reads_pipeline.nf
 
-# how to run code (for QuantSeq_heat_shock)
-nextflow run paired_reads_pipeline.nf --combine_reads_over_lanes false --input_fq_dir '../data/QuantSeq_heat_shock/input/experiment_fastq/' --output_dir '../data/QuantSeq_heat_shock/output/' --sample_name_regex 'WD_[A-Z]\d+' --experiment_name 'QuantSeq_heat_shock'
+# how to run code (for QuantSeq_batch2)
+nextflow run paired_reads_pipeline.nf --combine_reads_over_lanes false --input_fq_dir '../data/QuantSeq_batch2/input/experiment_fastq/' --output_dir '../data/QuantSeq_batch2/output/' --sample_name_regex 'WD_[A-Z]\d+' --experiment_name 'QuantSeq_batch2'
 
 # how to run code (for 5PSeq)
 nextflow run paired_reads_pipeline.nf --experiment_name '5PSeq' --combine_reads_over_lanes false\
