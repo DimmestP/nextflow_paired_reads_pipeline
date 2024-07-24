@@ -9,7 +9,7 @@ output: html_document
 library(tidyverse)
 library(here)
 
-experiment_name = "5PSeq" # folder name for experiential 
+experiment_name = "QuantSeq_heat_shock" # folder name for experiential 
                              # meta either QuantSeq or 5PSeq
 
 GTF_COLNAMES = c("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attribute")

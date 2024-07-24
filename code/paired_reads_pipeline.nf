@@ -221,6 +221,9 @@ extract_sample_name = {
     sample_file_tuple
 }
 
+Channel.fromPath( "${params.index_dir}*.ht2")
+	.view()
+
 indexed_genomes = Channel.fromPath( "${params.index_dir}*.ht2" )
     .map(extract_sample_name)
     .groupTuple(size: 8)
@@ -262,6 +265,7 @@ Turn unsorted aligned samfiles into sorted indexed compressed bamfiles
 */
 
 process samViewSort {
+    maxForks 1
     errorStrategy 'retry'
     maxRetries 3
     tag "${sample_id}"
@@ -354,6 +358,8 @@ process renameBamSample {
 Define the gffs for each construct  
 */
 
+Channel.fromPath("${params.mRNAgff_dir}*.gff")
+           .view()
 
 mRNAgff = Channel.fromPath("${params.mRNAgff_dir}*.gff")
           .map(extract_sample_name)
@@ -366,7 +372,7 @@ Run featureCounts to count aligned reads to genes for all processed samples
 */
 
 process countAllmRNA {
-    conda 'bioconda::subread=2.0.0'
+    conda 'bioconda::subread=2.0.1'
     errorStrategy 'retry'
     maxRetries 3
     tag "${sample_id}"
